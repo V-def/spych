@@ -6,23 +6,26 @@ import youtube_dl
 class Download:
     """download class"""
 
-    def __init__(self, arg):
+    def __init__(self, quarry):
         self.url = None
+        self.name = None
         self.file_name = None
-        self.temp = None
 
-        if arg.startswith('http'):
-            self.url = arg
-        else:
-            self.search(arg)
+        self.search(quarry)
 
     def search(self, query):
         """search an url with a string"""
         from youtubesearchpython import VideosSearch
 
         response = VideosSearch(query, limit=1)
+        infos = response.result()["result"][0]
 
-        self.url = response.result()["result"][0]["link"]
+        self.url = infos["link"]
+        self.name = infos["title"]
+        self.name = "".join(e for e in self.name if e.isascii() and e not in '\/:*?"<>|').replace('.', ' ')
+
+        while self.name.endswith(' '):  # to avoid problems when creating a directory
+            self.name = self.name[:-1]
 
     def hook(self, d):
         """hook that save the file name"""
@@ -31,8 +34,11 @@ class Download:
 
     def ydl(self):
         """download the video and the subtitles"""
+
+        YoutubeDownloaderLogger().reset()  # reset log file
+
         ydl_opts = {
-            'outtmpl': '/videos/%(title)s/%(title)s.%(ext)s',  # output file path and name
+            'outtmpl': f'/videos/{self.name}/{self.name}.%(ext)s',  # output file path and name
             'logger': YoutubeDownloaderLogger(),  # logger class
             'progress_hooks': [self.hook],
             'ignoreerrors': True,
@@ -43,3 +49,6 @@ class Download:
 
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([self.url])
+
+        if not self.file_name:
+            raise Exception(f'cannot download {self.url}')
