@@ -13,11 +13,15 @@ class Download:
 
         self.search(quarry)
 
-    def search(self, query):
+    def search(self, quarry):
         """search an url with a string"""
         from youtubesearchpython import VideosSearch
 
-        response = VideosSearch(query, limit=1)
+        response = VideosSearch(quarry, limit=1)
+
+        if len(response.result()["result"]) == 0:
+            raise Exception(f'did not find any videos named {quarry}')
+
         infos = response.result()["result"][0]
 
         self.url = infos["link"]
