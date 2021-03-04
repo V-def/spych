@@ -6,10 +6,11 @@ class Logger(object):
 
     def __init__(self):
         self.path = "logs"
-        self.name = "logs"
+        self.name = "name"
         self.extension = ".txt"
 
-        self.reset()
+        if type(self) != Logger:
+            self.reset()
 
     @property
     def file(self):
@@ -25,24 +26,23 @@ class Logger(object):
         with open(self.file, 'a') as data:
             data.write(f'{msg}\n')
 
-    @staticmethod
-    def log(self, msg):
+    def log(self, msg, save=True):
         """print the log"""
         print(msg)
+        self.save_log(msg)
 
 
 class YoutubeDownloaderLogger(Logger):
     """specific logs from youtube dl"""
     def __init__(self):
         Logger.__init__(self)
-        self.name = "ydl_logs"
+        self.name = "ydl"
 
     def debug(self, msg):
         self.log(msg)
-        self.save_log(f'[debug] {self.save_log(msg)}')
 
     def warning(self, msg):
-        self.save_log(f'[warning] {self.save_log(msg)}')
+        self.log(msg)
 
     def error(self, msg):
-        self.save_log(f'[error] {self.save_log(msg)}')
+        self.log(msg)
